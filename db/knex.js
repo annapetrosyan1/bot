@@ -1,6 +1,5 @@
 require('dotenv').config()
 const axios = require('axios')
-const { list } = require('../source/bot')
 const knex = require('knex')({
 	client: 'pg',
 	connection: {
@@ -14,18 +13,6 @@ const knex = require('knex')({
 })
 
 const usersList = {}
-for (row of list) {
-	axios
-		.post('http://localhost:3000/emails', {
-			email: row,
-		})
-		.then(resp => {
-			console.log(resp.data)
-		})
-		.catch(error => {
-			console.log(error)
-		})
-}
 
 // проверка подключения
 // knex.raw('SELECT VERSION()').then(() => {

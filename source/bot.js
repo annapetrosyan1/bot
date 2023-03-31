@@ -1,38 +1,38 @@
 require('dotenv').config()
 const { Telegraf } = require('telegraf')
 const { message } = require('telegraf/filters')
-const axios = require('axios')
-const { v4: uuidv4 } = require('uuid')
+const { default: axios } = require('axios')
 const emailRegExp = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.[a-zA-Z]{2,10})+$/gi
 const bot = new Telegraf(process.env.BOT_TOKEN)
 bot.start(ctx => ctx.reply('Для авторизации введите свой email: '))
-
-bot.on(message('start'), async ctx => {
-	const email = await ctx.message.text
+bot.on(message('text'), async ctx => {
+	const email = ctx.update.message.text.trim()
 	if (emailRegExp.test(email)) {
-		axios
-			.post('http://localhost:3000/emails', {
-				id: uuidv4,
-				email,
+		const { data } = await axios.get('http://localhost:3000/emails')
+		if (data.length < 0 || !data) {
+			ctx.reply('база пуста: ')
+		}
+		const isHasEmail = data.find(item => item.email === email)
+		if (typeof isHasEmail === 'object' && Boolean(isHasEmail.email)) {
+			const { data } = await axios.get(`http://localhost:3000/emails?email=${isHasEmail.email}`)
+			await axios.patch(`http://localhost:3000/emails/${data[0].id}`, {
+				...isHasEmail,
+				chatId: ctx.botInfo.id,
+				userId: ctx.from.id,
 			})
-			.then(resp => {
-				console.log(resp.data)
-			})
-			.catch(error => {
-				console.log(error)
-			})
-		ctx.reply(`Вы успешно емайл ${email}`)
-		return ''
+			ctx.reply('спасибо за ответ, вы будете уведомлени!')
+		} else {
+			ctx.reply('email не найден в базе: ')
+		}
+	} else {
+		ctx.reply('email написан не правильно: ')
 	}
-	ctx.reply(`Вы писали неверный емайл`)
 })
 
-// bot.on('мой_id', ctx => {
-//   let user__id = ctx.from_user.id;
-//   ctx.reply('Твой ID: ' + user__id)
-// })
+bot.on('мой_id', ctx => {
+	ctx.reply('Твой ID: ' + ctx.from_user.id)
+})
 bot.launch()
-
 // a)	Создать бота со следующим функционалом
 // i)	При стартер бот запрашивает email
 // ii)	При вводе email ищется пользователь в базе с таким email и его присваивается telegram id из его сообщения

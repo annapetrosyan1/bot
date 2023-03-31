@@ -1,1 +1,18 @@
-{ "emails": [] }
+{
+  "emails": [
+    {
+      "id": 1,
+      "email": "test@mail.ru",
+      "chatId": 6200746901,
+      "userId": 525879562
+    },
+    {
+      "id": 2,
+      "email": "test2@mail.ru"
+    },
+    {
+      "id": 3,
+      "email": "test2@mail.ru"
+    }
+  ]
+}
